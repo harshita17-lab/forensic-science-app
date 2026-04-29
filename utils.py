@@ -1,3 +1,4 @@
+from face_utils import face_match
 import cv2 as cv
 import numpy as np
 from numpy.linalg import norm
@@ -78,7 +79,7 @@ def save_visualization(orb_score, cnn_score):
     plt.savefig("static/result.png")
     plt.close()
 
-# ---------------- MAIN FUNCTION ----------------
+# ---------------- MAIN FINGERPRINT FUNCTION ----------------
 
 
 def fingerprint_match(path1, path2):
@@ -112,26 +113,53 @@ def fingerprint_match(path1, path2):
     quality_score = (blur_norm + contrast_norm) / 2
 
     # -------- NORMALIZE ORB --------
-    orb_norm = min(1.0, orb_score / 100)
+    orb_norm = orb_score / (orb_score + 50)
 
-    # -------- ADAPTIVE FUSION (IMPROVED) --------
-    # Higher quality → trust CNN more
+    # -------- ADAPTIVE FUSION --------
     w_cnn = 0.5 + 0.3 * quality_score
-    w_orb = 0.5 - 0.3 * quality_score
+    w_orb = 1.0 - w_cnn
 
     final_score = (w_cnn * cnn_score) + (w_orb * orb_norm)
 
     # Decision
     is_match = final_score > 0.6
 
-    # Save graph
+    # Save visualization
     save_visualization(orb_score, cnn_score)
 
-    # Output
-    return f"""
+    # -------- DEBUG LOG (important for research) --------
+    print(f"CNN: {cnn_score:.2f}, ORB: {orb_score}, Quality: {quality_score:.2f}, Final: {final_score:.2f}")
+
+    # -------- SAVE RESULTS (for FAR/FRR later) --------
+    with open("results.txt", "a") as f:
+        f.write(
+            f"{cnn_score},{orb_score},{quality_score},{final_score},{is_match}\n")
+
+    # -------- HTML OUTPUT --------
+    html_output = f"""
     <b>CNN Similarity:</b> {cnn_score:.2f}<br>
     <b>ORB Matches:</b> {orb_score}<br>
     <b>Quality Score:</b> {quality_score:.2f}<br>
     <b>Final Score:</b> {final_score:.2f}<br><br>
     <b>Result:</b> {'✅ Same Fingerprint' if is_match else '❌ Different Fingerprint'}
     """
+
+    # IMPORTANT: return BOTH score and HTML
+    return final_score, html_output
+
+
+# ---------------- MULTIMODAL FUSION ----------------
+
+
+def multimodal_match(fp1, fp2, face1, face2):
+
+    # Fingerprint
+    fp_score, fp_result = fingerprint_match(fp1, fp2)
+
+    # Face
+    face_score = face_match(face1, face2)
+
+    # -------- SIMPLE FUSION --------
+    final_score = 0.6 * fp_score + 0.4 * face_score
+
+    return final_score, fp_result, face_score

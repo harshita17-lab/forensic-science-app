@@ -2,63 +2,106 @@
 <html>
 
 <head>
-    <title>Fingerprint Recognition</title>
+    <title>Multi-Modal Biometric System</title>
     <style>
         body {
-            font-family: Arial;
-            background: #f0f2f5;
-            text-align: center;
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f4f6f8;
+        }
+
+        h1 {
+            color: #333;
         }
 
         .container {
             background: white;
-            padding: 30px;
-            margin: 50px auto;
-            width: 500px;
+            padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            width: 500px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        input,
+        select,
+        button {
+            margin-top: 10px;
+            padding: 8px;
+            width: 100%;
         }
 
         button {
-            padding: 10px 20px;
-            background: #28a745;
+            background-color: #007bff;
             color: white;
             border: none;
-            border-radius: 5px;
+            cursor: pointer;
         }
 
-        img {
-            margin-top: 15px;
-            width: 100%;
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
         }
     </style>
 </head>
 
 <body>
 
+    <h1>🔍 Multi-Modal Biometric System</h1>
+
     <div class="container">
-        <h2>🔍 Fingerprint Recognition System</h2>
-
         <form method="POST" enctype="multipart/form-data">
-            <p>Upload Fingerprint 1</p>
-            <input type="file" name="file1" required><br><br>
 
-            <p>Upload Fingerprint 2</p>
-            <input type="file" name="file2" required><br><br>
+            <h3>Fingerprint</h3>
+            <label>Upload Fingerprint 1:</label>
+            <input type="file" name="file1" required><br>
 
+            <label>Upload Fingerprint 2:</label>
+            <input type="file" name="file2" required><br>
+
+            <h3>Face</h3>
+            <label>Upload Face 1:</label>
+            <input type="file" name="face1"><br>
+
+            <label>Upload Face 2:</label>
+            <input type="file" name="face2"><br>
+
+            <h3>Mode Selection</h3>
+            <select name="mode">
+                <option value="fingerprint">Fingerprint Only</option>
+                <option value="face">Face Only</option>
+                <option value="multimodal">Multimodal</option>
+            </select>
+
+            <br><br>
             <button type="submit">Compare</button>
+
         </form>
 
-        {% if result %}
-        <h3>{{ result|safe }}</h3>
+        <!-- RESULTS -->
+        <div class="result">
 
-        <h4>ORB Matching Visualization</h4>
-        <img src="{{ url_for('static', filename='match.jpg') }}">
+            {% if result %}
+            <h3>Fingerprint Result:</h3>
+            <p>{{ result|safe }}</p>
+            {% endif %}
 
-        <h4>Comparison Graph</h4>
-        <img src="{{ url_for('static', filename='result.png') }}">
-        {% endif %}
+            {% if face_result %}
+            <h3>Face Result:</h3>
+            <p>{{ face_result }}</p>
+            {% endif %}
 
+            {% if final_score %}
+            <h3>Final Combined Score:</h3>
+            <p>{{ final_score }}</p>
+            {% endif %}
+
+        </div>
     </div>
 
 </body>
